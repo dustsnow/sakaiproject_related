@@ -5,8 +5,11 @@
 #		redis 
 #		elasticsearch
 #		rabbitmq 
+#Parameter:
+#	config
+#		config the script even if there's configuration file exist
 #
-#Installtion:
+#Running:
 # 	run this file as sudo user using bash command
 #		sudo bash Startup.sh
 #	This script will generate log file for every application in folder /tmp
@@ -45,6 +48,12 @@ function getPath {
 	if [  "${appFolder:0:1}" == "~" ]; then
 	    appFolder=${appFolder/\~/$HOME}"/"
 	fi
+	if [  "${appFolder:0:1}" == "." ]; then
+		currentFolder=`pwd`
+		echo ${appFolder/\./$currentFolder}"/"
+	    appFolder=${appFolder/\./$currentFolder}"/"
+	fi
+
 	folderCheck="FALSE" 
 	case $1 in
 		"cassandra")
@@ -58,7 +67,9 @@ function getPath {
 			;;
 	esac
 	if [ "$folderCheck" == "TRUE" ]; then
-		echo -e $1'\t'$appFolder >> ~/.config/HilaryConfig.conf
+		test ! -d $HOME"/.config/" && echo "config folder doesn't exist. Created it" && mkdir $HOME"/.config"
+		
+		echo -e $1'\t'$appFolder >> ~/.config/hilaryconfig.conf
 	else
 		echo "Cannot find folder. $appFolder Wrong Path"
 		getPath $1
@@ -78,15 +89,17 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 #The Default folder storing the configuration file
-configFolder=$HOME"/.config/HilaryConfig.conf"
+configFolder=$HOME"/.config/hilaryconfig.conf"
 #fileCheck indicate whether the configuration file exist
 fileCheck="FALSE"
 #test whether conf file exit, set fileCheck to true if exist
 test -e $configFolder && fileCheck="TRUE"
-
 #if conf file doesn't exist, go to configration
-if [ "$fileCheck" == "FALSE" ]; then
+if [ "$fileCheck" == "FALSE"  ]; then
 	echo "The default config file '$configFolder' DO NOT EXIST"	
+	config
+elif [ "$1" == "config" ]; then
+	echo "Configuration parameter accepted"
 	config
 else
 	echo "The config file '$configFolder' EXIST"	
@@ -103,6 +116,7 @@ do
 done < $configFolder
 
 sudo rabbitmq-server -detached > /tmp/rabbitmq.log 2>&1 & 
+exit 0
 ##sleep 20
 ##cd ./Hilary
 ##sudo node app.js | node_modules/.bin/bunyan
