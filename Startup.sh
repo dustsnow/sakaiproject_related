@@ -37,13 +37,13 @@ function startApp {
 function getPath {
 	echo "Please type in the path to $1 folder"
 	echo "Example: ~/Documents/$1"
-	read -p "Path: " appfolder
-	if [ "$appfolder" == "" ]; then
+	read -p "Path: " appFolder
+	if [ "$appFolder" == "" ]; then
 		echo "No path input!? type in again"
 		getPath $1
 	fi
-	if [  "${appfolder:0:1}" == "~" ]; then
-	    appFolder=${appfolder/\~/$HOME}"/"
+	if [  "${appFolder:0:1}" == "~" ]; then
+	    appFolder=${appFolder/\~/$HOME}"/"
 	fi
 	folderCheck="FALSE" 
 	case $1 in
